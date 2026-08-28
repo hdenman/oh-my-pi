@@ -49,6 +49,9 @@ pkgs.mkShell {
     pkgs.bun     # 1.3.14 (via overlay above)
     pkgs.bazelisk # reads .bazelversion (9.2.0) and downloads the right Bazel on first use
     pkgs.rustup  # manages the nightly toolchain; cargo ends up at ~/.cargo/bin
+    pkgs.pkg-config
+    pkgs.libopus # audiopus_sys links opus; pkg-config finds it, skipping cmake
+    pkgs.cmake   # fallback if pkg-config path isn't found
 
     # bazelisk's binary is named `bazelisk`; wrap it as `bazel` so build-local.ts
     # and any manual invocations work without extra thought.
@@ -65,5 +68,10 @@ pkgs.mkShell {
       echo "Installing Rust nightly-2026-04-29..."
       rustup toolchain install nightly-2026-04-29 --profile minimal
     fi
+
+    # Point pkg-config at nix-provided libopus so audiopus_sys skips cmake.
+    export PKG_CONFIG_PATH="${pkgs.libopus.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}"
+    # cmake policy compat flag (cmake 4.x dropped old minimum_required handling)
+    export CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5 ''${CMAKE_ARGS:-}"
   '';
 }
