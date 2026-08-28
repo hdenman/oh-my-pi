@@ -10,13 +10,28 @@ let
     system = "x86_64-linux"; # only used to choose which version of bun to get
     config.allowUnfree = true;
     overlays = [
-      (self: super: {
-        bun = super.bun_1_3_13.overrideAttrs (oldAttrs: {
+      (final: prev: {
+        # Override to bun 1.3.14 to match "packageManager": "bun@1.3.14" in package.json.
+        # Sources keyed by system — mirrors the upstream passthru.sources pattern.
+        bun = prev.bun.overrideAttrs (old: rec {
           version = "1.3.14";
-          src = self.fetchurl {
-            url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64.zip";
-            sha256 = "sha256-n6kLgQ2p5E0P5hP+M8fXk1V9X50E5N3E4N7Q1C1D1F1G1H1I1J1K1L1M1N1O1P1Q1R1S1T1U1V1W1X1Y1Z1a1b1c1d1e1f1g1h1i1j1k1l1m1n1o1p1q1r1s1t1u1v1w1x1y1z1"; # replace with actual sha256
-          };
+          src =
+            {
+              "aarch64-darwin" = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-darwin-aarch64.zip";
+                hash = "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA=";
+              };
+              "x86_64-linux" = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-x64.zip";
+                hash = "sha256-lR7iruhV8IWVruxiJSJqKY0/6oOj3NZGXAnLzN9+hI8=";
+              };
+              "aarch64-linux" = final.fetchurl {
+                url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-aarch64.zip";
+                hash = "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs=";
+              };
+            }
+            .${final.stdenv.hostPlatform.system}
+              or (throw "bun 1.3.14: unsupported system ${final.stdenv.hostPlatform.system}");
         });
       })
     ];
