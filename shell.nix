@@ -32,6 +32,10 @@ let
             }
             .${final.stdenv.hostPlatform.system}
               or (throw "bun 1.3.14: unsupported system ${final.stdenv.hostPlatform.system}");
+          # postPatchelf runs `bun completions` inside the sandbox — always fails for
+          # version bumps (binary must execute). We don't need shell completions here.
+          postPhases = [ ];
+          postPatchelf = "";
         });
       })
     ];
