@@ -43,4 +43,27 @@ let
   }).bun;
 
 in
-  import (fetchTarball "https://github.com/devenv/devenv/archive/main.tar.gz").outPath {}
+
+pkgs.mkShell {
+  packages = [
+    pkgs.bun     # 1.3.14 (via overlay above)
+    pkgs.bazelisk # reads .bazelversion (9.2.0) and downloads the right Bazel on first use
+    pkgs.rustup  # manages the nightly toolchain; cargo ends up at ~/.cargo/bin
+
+    # bazelisk's binary is named `bazelisk`; wrap it as `bazel` so build-local.ts
+    # and any manual invocations work without extra thought.
+    (pkgs.writeShellScriptBin "bazel" ''exec ${pkgs.bazelisk}/bin/bazelisk "$@"'')
+  ];
+
+  shellHook = ''
+    # Ensure the nightly toolchain the crate requires is present.
+    # Idempotent: rustup no-ops if already installed.
+    export RUSTUP_HOME="''${RUSTUP_HOME:-$HOME/.rustup}"
+    export CARGO_HOME="''${CARGO_HOME:-$HOME/.cargo}"
+    export PATH="$CARGO_HOME/bin:$PATH"
+    if ! cargo +nightly-2026-04-29 --version >/dev/null 2>&1; then
+      echo "Installing Rust nightly-2026-04-29..."
+      rustup toolchain install nightly-2026-04-29 --profile minimal
+    fi
+  '';
+}
