@@ -11,28 +11,29 @@ let
     config.allowUnfree = true;
     overlays = [
       (final: prev: {
-        # Override to bun 1.3.14 to match "packageManager": "bun@1.3.14" in package.json.
+        # Override to bun 1.4.0: fixes bun build --compile segfault on NixOS (bun issue #31023,
+        # fixed in 1.4.0 via PR #31024 — patchelf PT_LOAD selection bug in write_bun_section).
         # Sources keyed by system — mirrors the upstream passthru.sources pattern.
         bun = prev.bun.overrideAttrs (old: rec {
-          version = "1.3.14";
+          version = "1.4.0";
           src =
             {
               "aarch64-darwin" = final.fetchurl {
                 url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-darwin-aarch64.zip";
-                hash = "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA=";
+                hash = "sha256-xmnpf2Fk4cluBwF0jbmN+ndJKQjL2DlMdVcTSnNd44E=";
               };
               "x86_64-linux" = final.fetchurl {
                 # baseline build: no AVX2 required (works on older x86_64 CPUs e.g. Celeron J3455)
                 url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-x64-baseline.zip";
-                hash = "sha256-oGOQiuCLeFLKEJObvcbO7T3avOj7lALc6D1l1zs25sc=";
+                hash = "sha256-GE+0WV8NQBohfPfHjBvEMLqDMU2reouUgFurv3+nCX8=";
               };
               "aarch64-linux" = final.fetchurl {
                 url = "https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-aarch64.zip";
-                hash = "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs=";
+                hash = "sha256-SxozLuhhmD65O8/m93D/+U4+MbLDiL2uo8jtNeWO7Q4=";
               };
             }
             .${final.stdenv.hostPlatform.system}
-              or (throw "bun 1.3.14: unsupported system ${final.stdenv.hostPlatform.system}");
+              or (throw "bun 1.4.0: unsupported system ${final.stdenv.hostPlatform.system}");
           # postPatchelf runs `bun completions` inside the sandbox — always fails for
           # version bumps (binary must execute). We don't need shell completions here.
           postPhases = [ ];
