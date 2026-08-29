@@ -43,6 +43,64 @@ const symlink = path.join(localBin, "omp");
 
 await fs.mkdir(localBin, { recursive: true });
 
+// --- native addon: ensure sentinel matches current package version ---
+const nativesPackageJson = (await Bun.file(
+	path.join(repoRoot, "packages", "natives", "package.json"),
+).json()) as { version: string };
+const nativesVersion = nativesPackageJson.version;
+const platformTag = `${process.platform}-${process.arch}`;
+const nodeFilename = `pi_natives.${platformTag}.node`;
+const nodeFilePath = path.join(repoRoot, "packages", "natives", "native", nodeFilename);
+const versionSentinel = `__piNativesV${nativesVersion.replace(/[^A-Za-z0-9]/g, "_")}`;
+
+// Search for the sentinel symbol name in the binary — a missing or wrong-version .node
+// will not contain it and needs a cargo rebuild.
+const sentinelFound =
+	(await $`grep -qF ${versionSentinel} ${nodeFilePath}`.nothrow().quiet()).exitCode === 0;
+
+if (!sentinelFound) {
+	console.log(`Native addon missing sentinel ${versionSentinel} — rebuilding from source...`);
+
+	// Cargo lives under ~/.cargo/bin; cmake (from homebrew) may not be on PATH in mise envs.
+	const cargoBin = Bun.which("cargo") ?? path.join(os.homedir(), ".cargo", "bin", "cargo");
+	const cargoDir = path.dirname(cargoBin);
+	// Collect extra PATH dirs for system build tools cargo invokes (cmake, cc, etc.).
+	const extraDirs = [cargoDir, "/opt/homebrew/bin", "/usr/local/bin"].filter(d => {
+		try { return require("node:fs").statSync(d).isDirectory(); } catch { return false; }
+	});
+	const napiEnv = {
+		...Bun.env,
+		PATH: [...new Set([...extraDirs, ...(Bun.env.PATH ?? "").split(":")])].join(":"),
+		// pkg-config for homebrew-installed libs (e.g. opus) so audiopus_sys skips cmake.
+		PKG_CONFIG_PATH: [
+			"/opt/homebrew/lib/pkgconfig",
+			"/usr/local/lib/pkgconfig",
+			...(Bun.env.PKG_CONFIG_PATH ?? "").split(":").filter(Boolean),
+		].join(":"),
+		// cmake 4.x dropped compat with old cmake_minimum_required — pass the override
+		// as fallback in case pkg-config misses and cmake is invoked anyway.
+		CMAKE_ARGS: "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+	};
+
+	await $`bun node_modules/.bin/napi build --platform --release --no-js --package-json-path packages/natives/package.json --manifest-path crates/pi-natives/Cargo.toml --output-dir packages/natives/native/`
+		.cwd(repoRoot)
+		.env(napiEnv);
+
+	// Clear the stale versioned cache so the new binary re-extracts the fresh addon.
+	const staleCache = path.join(os.homedir(), ".omp", "natives", nativesVersion);
+	await fs.rm(staleCache, { recursive: true, force: true });
+	console.log("Native addon rebuilt.");
+}
+
+// --- generate embedded assets (stats client, tool views) ---
+console.log("Generating embedded assets...");
+await $`bun run gen:stats`.cwd(repoRoot).quiet();
+await $`bun --cwd=packages/collab-web run gen:tool-views`.cwd(repoRoot).quiet();
+
+// --- embed native addon ---
+console.log("Embedding native addon...");
+await $`bun run gen:native`.cwd(repoRoot).quiet();
+
 // --- build ---
 console.log(`Building omp.${stamp} ...`);
 const isDarwin = process.platform === "darwin";
