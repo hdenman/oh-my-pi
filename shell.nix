@@ -37,7 +37,7 @@ let
   });
 
   pkgs = import unstableNixpkgs {
-    system = "aarch64-darwin";
+    system = builtins.currentSystem;
     config.allowUnfree = true;
     overlays = [ bunOverlay ];
   };
