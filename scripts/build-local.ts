@@ -49,7 +49,10 @@ const nativesPackageJson = (await Bun.file(
 ).json()) as { version: string };
 const nativesVersion = nativesPackageJson.version;
 const platformTag = `${process.platform}-${process.arch}`;
-const nodeFilename = `pi_natives.${platformTag}.node`;
+const nodeFilename =
+	process.arch === "x64"
+		? `pi_natives.${platformTag}-gnu.node`
+		: `pi_natives.${platformTag}.node`;
 const nodeFilePath = path.join(repoRoot, "packages", "natives", "native", nodeFilename);
 const versionSentinel = `__piNativesV${nativesVersion.replace(/[^A-Za-z0-9]/g, "_")}`;
 
