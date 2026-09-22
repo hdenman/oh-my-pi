@@ -707,7 +707,7 @@ export interface AstMatchResult {
 }
 
 /** ast-grep pattern strictness (controls how patterns match syntax). */
-export declare enum AstMatchStrictness {
+export declare const enum AstMatchStrictness {
   /** Match at the concrete syntax tree level. */
   Cst = 'cst',
   /** Balanced default suitable for most searches. */
@@ -1090,7 +1090,7 @@ export interface DiffRun {
 }
 
 /** One side of a streamed line diff. */
-export declare enum DiffSide {
+export declare const enum DiffSide {
   /** Original/base text. */
   Old = 'Old',
   /** Updated/target text. */
@@ -1137,7 +1137,7 @@ export interface DiffStreamResult {
 export declare function diffWords(oldText: string, newText: string): Array<DiffChange>
 
 /** Ellipsis strategy for [`truncate_to_width`]. */
-export declare enum Ellipsis {
+export declare const enum Ellipsis {
   /** Use a single Unicode ellipsis character ("…"). */
   Unicode = 0,
   /** Use three ASCII dots ("..."). */
@@ -1183,7 +1183,7 @@ export interface EnclosingBoundaryOptions {
 export declare function encodeSixel(bytes: Uint8Array, targetWidthPx: number, targetHeightPx: number): string
 
 /** Tokenizer encoding to use. */
-export declare enum Encoding {
+export declare const enum Encoding {
   /** GPT-4o / o1 / GPT-5 (default). */
   O200kBase = 'O200kBase',
   /** GPT-3.5 / GPT-4 / older. */
@@ -1252,7 +1252,7 @@ export interface ExtractSegmentsResult {
 }
 
 /** Resolved filesystem entry kind for glob filters and match metadata. */
-export declare enum FileType {
+export declare const enum FileType {
   /** Regular file. */
   File = 1,
   /** Directory. */
@@ -1459,7 +1459,7 @@ export interface GrepOptions {
 }
 
 /** Output mode for [`search`] and [`grep`] (string values match JS callers). */
-export declare enum GrepOutputMode {
+export declare const enum GrepOutputMode {
   /** Emit matched lines (and optional context lines). */
   Content = 'content',
   /** Emit per-file or total counts instead of line content. */
@@ -1578,7 +1578,7 @@ export declare function isoBackend(): IsoBackendKind
  * Isolation backend identifier. Numeric so the JS side can `switch` on
  * the enum without string comparisons.
  */
-export declare enum IsoBackendKind {
+export declare const enum IsoBackendKind {
   Apfs = 0,
   Btrfs = 1,
   Zfs = 2,
@@ -1590,7 +1590,7 @@ export declare enum IsoBackendKind {
 }
 
 /** How a single file changed between `lower` and `merged`. */
-export declare enum IsoChangeKind {
+export declare const enum IsoChangeKind {
   Added = 0,
   Modified = 1,
   Removed = 2
@@ -1676,7 +1676,7 @@ export declare function isoStart(kind: IsoBackendKind | undefined | null, lower:
 export declare function isoStop(kind: IsoBackendKind | undefined | null, merged: string): Promise<void>
 
 /** Event types from Kitty keyboard protocol (flag 2). */
-export declare enum KeyEventType {
+export declare const enum KeyEventType {
   /** Key press event. */
   Press = 1,
   /** Key repeat event. */
@@ -1740,7 +1740,7 @@ export interface ListWorkspaceResult {
  * System UI appearance reported by native macOS APIs (`detectMacOSAppearance`
  * and observer).
  */
-export declare enum MacOSAppearance {
+export declare const enum MacOSAppearance {
   /** Dark color scheme. */
   Dark = 'dark',
   /** Light color scheme. */
@@ -2034,7 +2034,7 @@ export interface PointerOptions {
 }
 
 /** Current state of a process reference. */
-export declare enum ProcessStatus {
+export declare const enum ProcessStatus {
   /** The referenced process is still running. */
   Running = 'running',
   /** The referenced process has exited or is no longer observable. */
