@@ -75,6 +75,7 @@ const candidates: CandidateAddon[] =
 		? [
 				{ variant: "modern", filename: `pi_natives.${platformTag}-modern.node` },
 				{ variant: "baseline", filename: `pi_natives.${platformTag}-baseline.node` },
+				{ variant: "default", filename: `pi_natives.${platformTag}-gnu.node` }, // Added this line
 			]
 		: [{ variant: "default", filename: `pi_natives.${platformTag}.node` }];
 
